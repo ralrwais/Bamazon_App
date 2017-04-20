@@ -13,50 +13,54 @@ var connection = mysql.createConnection({
 
 connection.connect(function(err){
 	if(err){ throw err; }
-	
+	items();
 });
 
-inquirer.prompt([{
-		name: 'choice',
-		message: 'Choose an item to shop!',
-		type: 'list',
-		choices: [ 'Charger', 'TextBook', 'Snuggy', 'Plant', 'Lotion', 'PhoneCase', 'Headphones', 'Lipstick', 'Swimsuit', 'Calculator', 'Not interested']
-
-}]).then(function (chose) {
-		if(chose.choice === 'Not interested') {
-			console.log("Thats fine, check again later.");
-		} else {
-			buy();
-		}
-});
-
-function buy(Charger, TextBook, Snuggy, Plant, Lotion, PhoneCase, Headphones, Lipstick, Swimsuit, Calculator){
-		this.Charger = Charger;
-		this.TextBook = TextBook;
-		this.Snuggy = Snuggy;
-		this.Plant = Plant;
-		this.Lotion = Lotion;
-		this.PhoneCase = PhoneCase;
-		this.Headphones = Headphones;
-		this.Lipstick = Lipstick;
-		this.Swimsuit = Swimsuit;
-		this.Calculator = Calculator;
-
-
+function items() {
+    connection.query("SELECT * FROM products", function(err, results) {
+        if (err) { throw err; }
+        for (var i = 0; i < results.length; i++) {
+            console.log(results[i].item_id + "\nItem: " + results[i].product_name + "\nPrice: $" + results[i].price + "\nNumber in stock: "+ results[i].stock_quantity);
+            console.log(" ");
+        }
+        buy();
+    })
 }
 
-function a(things) {
-	this.name = things.name;
+function buy() {
+    inquirer.prompt([
+        {
+            type: "input",
+            name: "item",
+            message: "Please enter the item ID:",
+        },
+        {
+            type: "input",
+            name: "amount",
+            message: "Please enter the quantity you would like:",
+        }
+    ]).then(function(res) {
+        connection.query("SELECT * FROM products WHERE ItemID = ?", [res.item], function(err, result) {
+            
+            if (result.amount > result.stock_quantity) {
+                console.log("Out of Stock");
+                end();
+            } else {
+                connection.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE ItemID = ?", [res.amount, res.item], function(err, result) {
+
+               
+                        end();
+                    });
+            }
+        })
+    })
 }
 
-a.all = function(callback) {
-		connection.query('SELECT * FROM products', function(err, results){
-			if(err){ throw err; }
-			callback(results);
-		});
-};
-
-
+function end() {
+    connection.end(function(err) {
+        if (err) throw err;
+    })
+}
 
 
 
