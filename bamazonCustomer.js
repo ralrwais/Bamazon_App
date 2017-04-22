@@ -39,14 +39,14 @@ function buy() {
             name: "amount",
             message: "Please enter the quantity you would like:",
         }
-    ]).then(function(res) {
-        connection.query("SELECT * FROM products WHERE ItemID = ?", [res.item], function(err, result) {
+    ]).then(function(answer) {
+        connection.query("SELECT * FROM products WHERE ItemID = ?", [answer.item], function(err, result) {
             
-            if (result.amount > result.stock_quantity) {
+            if (answer.amount > answer.stock_quantity) {
                 console.log("Out of Stock");
                 end();
             } else {
-                connection.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE ItemID = ?", [res.amount, res.item], function(err, result) {
+                connection.query("UPDATE products SET stock_quantity = stock_quantity - ? WHERE ItemID = ?", [answer.amount, answer.item], function(err, result) {
 
                
                         end();
